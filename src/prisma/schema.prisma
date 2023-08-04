@@ -1,0 +1,22 @@
+datasource db {
+    provider = "mysql"
+    url      = env("PRM_DB_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model users {
+    id            Int      @id @unique @default(autoincrement())
+    email         String   @unique @db.Char(100)
+    email_confirm Boolean  @default(false)
+    user_name     String   @unique @db.Char(30)
+    first_name    String   @db.Char(30)
+    last_name     String   @db.Char(30)
+    password      String   @db.Char(255)
+    blocked       Boolean  @default(false)
+    avatar        String   @default("http://127.0.0.1:4000/no_avatar.jpg")
+    create_at     DateTime @default(now())
+    update_at     DateTime @default(now())
+}
