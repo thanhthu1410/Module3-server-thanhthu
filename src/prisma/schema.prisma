@@ -1,22 +1,110 @@
-datasource db {
-    provider = "mysql"
-    url      = env("PRM_DB_URL")
+generator client {
+  provider = "prisma-client-js"
 }
 
-generator client {
-    provider = "prisma-client-js"
+datasource db {
+  provider = "mysql"
+  url      = env("PRM_DB_URL")
 }
 
 model users {
-    id            Int      @id @unique @default(autoincrement())
-    email         String   @unique @db.Char(100)
-    email_confirm Boolean  @default(false)
-    user_name     String   @unique @db.Char(30)
-    first_name    String   @db.Char(30)
-    last_name     String   @db.Char(30)
-    password      String   @db.Char(255)
-    blocked       Boolean  @default(false)
-    avatar        String   @default("http://127.0.0.1:4000/no_avatar.jpg")
-    create_at     DateTime @default(now())
-    update_at     DateTime @default(now())
+  id            Int        @id @unique @default(autoincrement())
+  email         String     @unique @db.Char(100)
+  email_confirm Boolean    @default(false)
+  user_name     String     @unique @db.Char(30)
+  first_name    String     @db.Char(30)
+  last_name     String     @db.Char(30)
+  password      String     @db.Char(255)
+  blocked       Boolean    @default(false)
+  avatar        String     @default("no_avatar.jpg")
+  create_at     DateTime   @default(now())
+  update_at     DateTime   @default(now())
+  role          Role       @default(USER)
+  carts         carts?
+  receipts      receipts[]
+}
+
+model categories {
+  id       Int        @id @default(autoincrement())
+  title    String
+  status   Boolean    @default(false)
+  avatar   String     @default("category.jpg")
+  deleted  Boolean    @default(false)
+  products products[]
+}
+
+model products {
+  id              Int               @id @default(autoincrement())
+  name            String
+  active          Boolean           @default(false)
+  des             String
+  avatar          String            @db.VarChar(300)
+  category_id     Int
+  Price           Float?            @db.Float
+  calories        Float?            @db.Float
+  cart_details    cart_details[]
+  category        categories        @relation(fields: [category_id], references: [id])
+  receipt_details receipt_details[]
+
+  @@index([category_id], map: "products_category_id_fkey")
+}
+
+model carts {
+  id           String         @id @default(uuid())
+  user_id      Int            @unique
+  cart_details cart_details[]
+  user         users          @relation(fields: [user_id], references: [id])
+}
+
+model cart_details {
+  id         Int      @id @default(autoincrement())
+  cart_id    String
+  product_id Int
+  quantity   Int
+  note       String?
+  cart       carts    @relation(fields: [cart_id], references: [id])
+  product    products @relation(fields: [product_id], references: [id])
+
+  @@index([cart_id], map: "cart_details_cart_id_fkey")
+  @@index([product_id], map: "cart_details_product_id_fkey")
+}
+
+model receipts {
+  id              Int               @id @default(autoincrement())
+  total           Float
+  paid            Boolean
+  paid_time       DateTime?
+  create_at       DateTime          @default(now())
+  pay_mode        PayMode
+  receipt_code    String
+  update_at       DateTime          @default(now())
+  user_id         Int
+  receipt_details receipt_details[]
+  user            users             @relation(fields: [user_id], references: [id])
+
+  @@index([user_id], map: "receipts_user_id_fkey")
+}
+
+model receipt_details {
+  id         Int      @id @default(autoincrement())
+  receipt_id Int
+  product_id Int
+  quantity   Int
+  note       String?
+  product    products @relation(fields: [product_id], references: [id])
+  receipt    receipts @relation(fields: [receipt_id], references: [id])
+
+  @@index([product_id], map: "receipt_details_product_id_fkey")
+  @@index([receipt_id], map: "receipt_details_receipt_id_fkey")
+}
+
+enum PayMode {
+  CASH
+  ZALO
+  MOMO
+}
+
+enum Role {
+  USER
+  ADMIN
 }

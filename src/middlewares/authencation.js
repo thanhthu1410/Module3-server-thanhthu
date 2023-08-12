@@ -37,5 +37,22 @@ export default {
         }
         req.body.data = tokenCheck.data
         next();
+    },
+    checkToken: function(req,res,next){
+        if(!req.headers.authorization){
+            return res.status(213).json({
+                message : "please login!"
+            });
+        }
+        let decode  = jwt.verifyToken(req.headers.authorization);
+        if(!decode){
+            return res.status(213).json({
+                message : "Token Invalid"
+            })
+        }
+        if(req.params.user_id != decode.data.id){
+            return res.status(213).json({message:"Không có quyền truy cap"})
+        }
+        next()
     }
 }

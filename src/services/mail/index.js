@@ -12,7 +12,7 @@ export default {
             });
             
             await transporter.sendMail({
-                from: 'mieumieu.nodejs@gmail.com',
+                from: 'thutran123258@gmail.com',
                 ...mailOptions
             });
 
@@ -20,6 +20,15 @@ export default {
         }catch (err) {
             return false
         }
+    },
+    sendMailMessage: async function (to, subject, message) {
+        let mailOptions = {
+            to,
+            subject: "GongCha Store thông báo về việc: " + subject,
+            html: message
+        }
+
+        return await this.sendMail(mailOptions);
     }
 }
 

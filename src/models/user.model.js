@@ -50,7 +50,7 @@ export default {
 
                        if (flag) {
                         try {
-                            console.log("create replace", this)
+
 
                             await prisma.users.update({
                                 where: {
@@ -92,7 +92,8 @@ export default {
                 email: data.email
             },
             data: {
-                email_confirm: true
+                email_confirm: true,
+                update_at: new Date(Date.now())
             }
            })
            
@@ -132,26 +133,67 @@ export default {
             }
         }
     },
-    update: async (data) => {
+    update: async (datas) => {
+        console.log("data",datas)
         try {
            let user = await prisma.users.update({
             where: {
-                user_name: data.user_name
+                user_name: datas.user_name
             },
             data: {
-                password: data.password
+                ...datas,
+                update_at: new Date(Date.now())
             }
            })
            
            return {
                 status: true,
-                message: "Update thành công!"
+                message: "Update thành công!",
+                data: user
            }
         }catch(err) {
+            console.log("errr test avatar",err);
+
             return {
                 status: false,
                 message: "Lỗi gì đó!"
             }
         }
     },
+    findById: async (userId)=>{
+        try{
+            const updateAt = await prisma.users.findUnique({
+                where:{
+                    id : userId
+                },
+                select : {
+                    update_at : true
+                }
+        
+        })
+         if(updateAt){
+            return {
+                status : true,
+                messsage:"Tìm kiếm thành công user",
+                data  : updateAt.update_at 
+               }    
+         }else{
+            return {
+                status : true,
+                messsage:"Tìm kiếm user that bai !",
+                data  : null
+               }    
+         }
+        }catch(err){
+
+            return {
+                status : false,
+                messege :"lỗi"
+
+            }
+
+        }
+        
+    }
+       
 }

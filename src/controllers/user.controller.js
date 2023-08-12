@@ -5,7 +5,8 @@ import path from 'path'
 import jwt from '../services/jwt';
 import bcrypt from 'bcrypt';
 import ipService from '../services/ip'
-
+import {uploadFileToStorage} from "../meobase" 
+import fs from 'fs'
 async function sendMailLogin(user, ip) {
     let result = await ipService.deIp(ip); // 5.181.233.162
     /* Xử lý email */
@@ -14,12 +15,12 @@ async function sendMailLogin(user, ip) {
             to: user.email,
             subject: "Thông báo về tài khoản",
             html: `
-                <h1 style="color: red">
+                <h1 style="color: black">
                     ${
                         result.status == "fail" 
                         ?
-                            "Tài khoản đã login tại địa chỉ ip là: " + ip
-                        : "Tài khoản đã login tại: quốc gia: " + result.country  + " với ip là: " +result.query
+                            "The account logged in at the ip address : " + ip
+                        : "Tài khoản đã login tại: quốc gia: " + result.country  + " với ip là: " + result.query
                     }
 
                 </h1>
@@ -70,7 +71,7 @@ export default {
                 modelRes.message += " Lỗi trong quá trình gửi mail xác thực, bạn có thể gửi lại email trong phần profile"
             }
 
-            res.status(modelRes.status ? 200 : 413).json(modelRes)
+            res.status(modelRes.status ? 200 : 214).json(modelRes)
         } catch (err) {
             return res.status(500).json(
                 {
@@ -94,6 +95,84 @@ export default {
             return res.status(500).json(
                 {
                     message: "Bad request !"
+                }
+            )
+        }
+    },    
+    /* Update Information */
+    update: async (req, res) => {
+        console.log("req.params.userId, req.body",req.params.userId, req.body);
+
+        try {
+            /* Call model edit users */
+            let modelRes = await userModel.update(req.body)
+
+            if (modelRes.status) {
+                let ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress; // địa chỉ ip nơi gửi request
+                 /* Gửi mail thông báo */
+                mailService.sendMailMessage(
+                    modelRes.data.email, 
+                    "CẬP NHẬT THÔNG TIN CÁ NHÂN",
+                    `
+                        <h1 style="color: red"> Đã thay đổi thông tin vào lúc ${new Date(Date.now()).getHours()}h-${new Date(Date.now()).getMinutes()}p cùng ngày!</h1>
+                        <p> Ip thực hiện yêu cầu: ${ipAddress}</p>
+                        <p> Nếu quý khách không thực hiện hãy liên hệ khẩn cấp với chúng tôi qua hotline: 0234 567 899</p>
+                    `
+                )
+
+                delete modelRes.data;
+            }
+
+            /* update Res */
+            res.status(modelRes.status ? 200 : 213).json(modelRes)
+        } catch (err) {
+
+            /* Register Res */
+            return res.status(500).json(
+                {
+                    message: "Lỗi xử lý!"
+                }
+            )
+        }
+    },
+     /* Update Information */
+     updateAvatar: async (req, res) => {
+
+ 
+        try {
+            /* Upload to firebase */
+            let avatarUrl = await uploadFileToStorage(req.file, "users", fs.readFileSync(req.file.path));
+            fs.unlink(req.file.path, (err) => {});
+
+            
+            req.body.avatar = avatarUrl;
+            /* Call model edit users */
+            let modelRes = await userModel.update(req.body)
+
+            if (modelRes.status) {
+                let ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress; // địa chỉ ip nơi gửi request
+                    /* Gửi mail thông báo */
+                mailService.sendMailMessage(
+                    modelRes.data.email, 
+                    "CẬP NHẬT THÔNG TIN CÁ NHÂN",
+                    `
+                        <h1 style="color: red"> Đã thay đổi thông tin vào lúc ${new Date(Date.now()).getHours()}h-${new Date(Date.now()).getMinutes()}p cùng ngày!</h1>
+                        <p> Ip thực hiện yêu cầu: ${ipAddress}</p>
+                        <p> Nếu quý khách không thực hiện hãy liên hệ khẩn cấp với chúng tôi qua hotline: 0123 456 789</p>
+                    `
+                )
+
+                delete modelRes.data;
+            }
+
+            /* update Res */
+            res.status(modelRes.status ? 200 : 213).json(modelRes)
+        } catch (err) {
+
+            /* Register Res */
+            return res.status(500).json(
+                {
+                    message: "Lỗi xử lý!"
                 }
             )
         }
@@ -140,7 +219,17 @@ export default {
     },
     authenToken: async (req, res) => {
         let decode = jwt.verifyToken(req.body.token)
-        return res.status(200).json(decode) 
+        
+        if(decode){
+           
+            let modelRes = await userModel.findById(decode.data.id)
+            if(modelRes.data != null) {
+                return res.status(new Date(decode.data.update_at).toDateString() == new Date(modelRes.data).toDateString() ? 200 : 500).json(decode)
+            } 
+        }
+      
+
+        return res.status(500).json(decode) 
     },
     changePassword: async (req, res) => {
         try {
@@ -189,7 +278,7 @@ export default {
             if (!decode) {
                 return res.status(200).send("Email hết hạn!")
             }else {
-                console.log("decode", decode)
+
                 let result = await userModel.update({
                     user_name: decode.user_name,
                     password: decode.new_pass
