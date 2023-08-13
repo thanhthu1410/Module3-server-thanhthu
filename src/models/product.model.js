@@ -46,7 +46,11 @@ export default {
    
     findMany: async function () {
         try {
-            let products = await prisma.products.findMany();
+            let products = await prisma.products.findMany({
+                where:{
+                    active:false
+                }
+            });
             return {
                 status: true,
                 message: "san pham duoc tim thay!",
@@ -90,5 +94,28 @@ export default {
             }
         }
     },
+    update: async function (productId, data) {
+        try {
+            const product = await prisma.products.update({
+                where: {
+                    id: productId
+                },
+                data: {
+                    ...data
+                }
+            })
+            return {
+                status: true,
+                message: "Update sản phẩm thành công!",
+                data: product
+            }
+        } catch (err) {
+            return {
+                status: false,
+                message: "Lỗi không xác định!"
+            }
+        }
+    },
+
     
 }

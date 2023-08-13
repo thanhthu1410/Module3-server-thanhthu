@@ -61,4 +61,26 @@ export default {
             })
         }
     },
+    update: async (req, res) => {
+
+        req.body = JSON.parse(req.body.product_infor);
+
+        // xử lý avatar
+        if (req.file != undefined) {
+            let url = await uploadFileToStorage(req.file, "products", fs.readFileSync(req.file.path));
+            fs.unlink(req.file.path, (err) => { })
+            req.body.avatar = url;
+        }
+
+        try {
+            /* Gọi model xử lý database */
+            let result = await productModel.update(Number(req.params.productId), req.body);
+            return res.status(result.status ? 200 : 214).json(result)
+            // console.log("result", result)
+        } catch (err) {
+            return res.status(500).json({
+                message: "Lỗi xử lý!"
+            })
+        }
+    }
 }

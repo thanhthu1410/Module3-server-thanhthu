@@ -17,7 +17,7 @@ const productUpload = multer({ storage: imgProductStorage })
 router.get('/:id', productController.readProductById);
 router.get("/",productController.findAll)
 router.post("/",productUpload.array('imgs'),productController.create)
-
+router.patch("/:productId",productUpload.single("avatar"),productController.update)
 
 
 export default router;

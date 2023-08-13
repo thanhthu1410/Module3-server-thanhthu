@@ -19,7 +19,7 @@ export default {
             next();
         }else {
             return res.status(200).json({
-                message: "Email đã được xác thực!"
+                message: "Email is already veryfied!"
             })
         }
     },

@@ -99,7 +99,7 @@ export default {
            
            return {
                 status: true,
-                message: "Confirm email thành công!",
+                message: "Confirm email succesfull !",
                 data: user
            }
         }catch(err) {
@@ -118,18 +118,18 @@ export default {
            if (!user) {
             return {
                     status: false,
-                    message: "Không tìm thấy người dùng!",
+                    message: "Cant not find User!",
             }
            }
            return {
                 status: true,
-                message: "Thông tin người dùng!",
+                message: "Cant not find User!",
                 data: user
            }
         }catch(err) {
             return {
                 status: false,
-                message: "Không tìm thấy người dùng!"
+                message: "Cant not find User!"
             }
         }
     },
@@ -148,7 +148,7 @@ export default {
            
            return {
                 status: true,
-                message: "Update thành công!",
+                message: "Update User Successfull !",
                 data: user
            }
         }catch(err) {
@@ -194,6 +194,25 @@ export default {
 
         }
         
-    }
+    },
+    findAllUsers: async () => {
+        try {
+            let users = await prisma.users.findMany({
+                where : {
+                    role : "USER"
+                }
+            })
+            return {
+                message: "get all user thanh cong",
+                data: users
+            }
+        } catch (err) {
+            console.log("err", err);
+            return {
+                status: false,
+                message: "get all user that bai"
+            }
+        }
+    },
        
 }

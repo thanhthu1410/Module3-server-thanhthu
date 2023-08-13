@@ -112,11 +112,11 @@ export default {
                  /* Gửi mail thông báo */
                 mailService.sendMailMessage(
                     modelRes.data.email, 
-                    "CẬP NHẬT THÔNG TIN CÁ NHÂN",
+                    "UPDATE PERSONAL INFORMATION",
                     `
-                        <h1 style="color: red"> Đã thay đổi thông tin vào lúc ${new Date(Date.now()).getHours()}h-${new Date(Date.now()).getMinutes()}p cùng ngày!</h1>
-                        <p> Ip thực hiện yêu cầu: ${ipAddress}</p>
-                        <p> Nếu quý khách không thực hiện hãy liên hệ khẩn cấp với chúng tôi qua hotline: 0234 567 899</p>
+                        <h1 style="color: red"> Information changed at ${new Date(Date.now()).getHours()}h-${new Date(Date.now()).getMinutes()}p cùng ngày!</h1>
+                        <p> Ip makes the request: ${ipAddress}</p>
+                        <p> If you do not do this, please contact us urgently via hotline: 0234 567 899</p>
                     `
                 )
 
@@ -154,17 +154,18 @@ export default {
                     /* Gửi mail thông báo */
                 mailService.sendMailMessage(
                     modelRes.data.email, 
-                    "CẬP NHẬT THÔNG TIN CÁ NHÂN",
+                    "UPDATE PERSONAL INFORMATION",
                     `
-                        <h1 style="color: red"> Đã thay đổi thông tin vào lúc ${new Date(Date.now()).getHours()}h-${new Date(Date.now()).getMinutes()}p cùng ngày!</h1>
-                        <p> Ip thực hiện yêu cầu: ${ipAddress}</p>
-                        <p> Nếu quý khách không thực hiện hãy liên hệ khẩn cấp với chúng tôi qua hotline: 0123 456 789</p>
+                        <h1 style="color: black"> Information changed at ${new Date(Date.now()).getHours()}h-${new Date(Date.now()).getMinutes()}p cùng ngày!</h1>
+                        <p> Ip makes the request in : ${ipAddress}</p>
+                        <p>If you do not do this, please contact us urgently via hotline: 0123 456 789</p>
                     `
                 )
-
+                // thành công xử lý token
+                let token = jwt.createToken(modelRes, "1d");
+                modelRes.token = token;
                 delete modelRes.data;
             }
-
             /* update Res */
             res.status(modelRes.status ? 200 : 213).json(modelRes)
         } catch (err) {
@@ -327,6 +328,20 @@ export default {
             )
         }
 
+    },
+    findAllUsers: async (req, res) => {
+        try {
+            let modelRes = await userModel.findAllUsers();
+
+            return res.status(modelRes.status ? 200 : 214).json(modelRes)
+
+        } catch (err) {
+            return res.status(500).json(
+                {
+                    message: "Bad request products !"
+                }
+            )
+        }
     },
 }
 
