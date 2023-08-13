@@ -19,7 +19,7 @@ async function sendMailLogin(user, ip) {
                     ${
                         result.status == "fail" 
                         ?
-                            "The account logged in at the ip address : " + ip
+                            "From Gong Cha !  The account logged in at the ip address : " + ip
                         : "Tài khoản đã login tại: quốc gia: " + result.country  + " với ip là: " + result.query
                     }
 
@@ -58,12 +58,12 @@ export default {
                     if (modelRes.status) {
                         let mailOptions = {
                             to: req.body.email,
-                            subject: "Xác thực email!",
+                            subject: "Confirm account in your Email !",
                             html: template
                         }
                         let mailSent = await mailService.sendMail(mailOptions);
                         if(mailSent) {
-                            modelRes.message += " Đã gửi email xác thực, vui lòng kiểm tra!"
+                            modelRes.message += " Please Check your Email and Confirm account in your Email !"
                         }
                     }
                 }
